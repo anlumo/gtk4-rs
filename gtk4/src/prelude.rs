@@ -26,6 +26,7 @@ pub use crate::media_stream::MediaStreamExtManual;
 pub use crate::native_dialog::NativeDialogExtManual;
 pub use crate::scale::ScaleExtManual;
 pub use crate::shortcut_trigger::ShortcutTriggerExtManual;
+pub use crate::snapshot::SnapshotExtManual;
 pub use crate::text_buffer::TextBufferExtManual;
 pub use crate::text_view::TextViewExtManual;
 pub use crate::tree_model::TreeModelExtManual;

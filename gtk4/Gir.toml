@@ -1834,6 +1834,8 @@ generate_builder = false
 [[object]]
 name = "Gtk.Snapshot"
 status = "generate"
+final_type = false
+manual_traits = ["SnapshotExtManual"]
     [[object.function]]
     pattern = "free_to_(node|paintable)"
     ignore = true # C convenience functions

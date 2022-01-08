@@ -54,7 +54,6 @@ generate = [
     "Gdk.ScrollDirection",
     "Gdk.ScrollEvent",
     "Gdk.SeatCapabilities",
-    "Gdk.Snapshot",
     "Gdk.SubpixelLayout",
     "Gdk.SurfaceEdge",
     "Gdk.TextureError",
@@ -540,6 +539,11 @@ boxed_inline = true
 
 [[object]]
 name = "Gdk.Seat"
+status = "generate"
+final_type = false
+
+[[object]]
+name = "Gdk.Snapshot"
 status = "generate"
 final_type = false
 
