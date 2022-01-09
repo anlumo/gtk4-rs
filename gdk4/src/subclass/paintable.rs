@@ -6,7 +6,7 @@
 use crate::subclass::prelude::*;
 use crate::{Paintable, PaintableFlags, Snapshot};
 use glib::translate::*;
-use glib::Cast;
+use glib::{Cast, IsA};
 
 pub trait PaintableImpl: ObjectImpl {
     #[doc(alias = "get_current_image")]
@@ -34,7 +34,13 @@ pub trait PaintableImpl: ObjectImpl {
         self.parent_intrinsic_aspect_ratio(paintable)
     }
 
-    fn snapshot(&self, paintable: &Self::Type, snapshot: &Snapshot, width: f64, height: f64);
+    fn snapshot(
+        &self,
+        paintable: &Self::Type,
+        snapshot: &impl IsA<Snapshot>,
+        width: f64,
+        height: f64,
+    );
 }
 
 pub trait PaintableImplExt: ObjectSubclass {
@@ -43,7 +49,13 @@ pub trait PaintableImplExt: ObjectSubclass {
     fn parent_intrinsic_width(&self, paintable: &Self::Type) -> i32;
     fn parent_intrinsic_height(&self, paintable: &Self::Type) -> i32;
     fn parent_intrinsic_aspect_ratio(&self, paintable: &Self::Type) -> f64;
-    fn parent_snapshot(&self, paintable: &Self::Type, snapshot: &Snapshot, width: f64, height: f64);
+    fn parent_snapshot(
+        &self,
+        paintable: &Self::Type,
+        snapshot: &impl IsA<Snapshot>,
+        width: f64,
+        height: f64,
+    );
 }
 
 impl<T: PaintableImpl> PaintableImplExt for T {
@@ -119,7 +131,7 @@ impl<T: PaintableImpl> PaintableImplExt for T {
     fn parent_snapshot(
         &self,
         paintable: &Self::Type,
-        snapshot: &Snapshot,
+        snapshot: &impl IsA<Snapshot>,
         width: f64,
         height: f64,
     ) {
@@ -133,7 +145,7 @@ impl<T: PaintableImpl> PaintableImplExt for T {
 
             func(
                 paintable.unsafe_cast_ref::<Paintable>().to_glib_none().0,
-                snapshot.to_glib_none().0,
+                snapshot.as_ref().to_glib_none().0,
                 width,
                 height,
             )
@@ -212,7 +224,7 @@ unsafe extern "C" fn paintable_snapshot<T: PaintableImpl>(
 
     imp.snapshot(
         from_glib_borrow::<_, Paintable>(paintable).unsafe_cast_ref(),
-        &Snapshot::from_glib_borrow(snapshotptr),
+        &*from_glib_borrow::<_, Snapshot>(snapshotptr),
         width,
         height,
     )

@@ -7,13 +7,13 @@ use crate::subclass::prelude::*;
 use crate::SymbolicPaintable;
 use gdk::subclass::prelude::PaintableImpl;
 use glib::translate::*;
-use glib::Cast;
+use glib::{Cast, IsA};
 
 pub trait SymbolicPaintableImpl: PaintableImpl {
     fn snapshot_symbolic(
         &self,
         paintable: &Self::Type,
-        snapshot: &gdk::Snapshot,
+        snapshot: &impl IsA<gdk::Snapshot>,
         width: f64,
         height: f64,
         colors: &[gdk::RGBA],
@@ -26,7 +26,7 @@ pub trait SymbolicPaintableImplExt: ObjectSubclass {
     fn parent_snapshot_symbolic(
         &self,
         _paintable: &Self::Type,
-        _snapshot: &gdk::Snapshot,
+        _snapshot: &impl IsA<gdk::Snapshot>,
         _width: f64,
         _height: f64,
         _colors: &[gdk::RGBA],
@@ -37,7 +37,7 @@ impl<T: SymbolicPaintableImpl> SymbolicPaintableImplExt for T {
     fn parent_snapshot_symbolic(
         &self,
         paintable: &Self::Type,
-        snapshot: &gdk::Snapshot,
+        snapshot: &impl IsA<gdk::Snapshot>,
         width: f64,
         height: f64,
         colors: &[gdk::RGBA],
@@ -53,7 +53,7 @@ impl<T: SymbolicPaintableImpl> SymbolicPaintableImplExt for T {
                     .unsafe_cast_ref::<SymbolicPaintable>()
                     .to_glib_none()
                     .0,
-                snapshot.to_glib_none().0,
+                snapshot.as_ref().to_glib_none().0,
                 width,
                 height,
                 colors.to_glib_none().0,
@@ -87,11 +87,9 @@ unsafe extern "C" fn symbolic_paintable_snapshot_symbolic<T: SymbolicPaintableIm
     let instance = &*(paintable as *mut T::Instance);
     let imp = instance.imp();
 
-    let snapshot: Borrowed<gdk::Snapshot> = from_glib_borrow(snapshotptr);
-
     imp.snapshot_symbolic(
         from_glib_borrow::<_, SymbolicPaintable>(paintable).unsafe_cast_ref(),
-        &snapshot,
+        &*from_glib_borrow::<_, gdk::Snapshot>(snapshotptr),
         width,
         height,
         std::slice::from_raw_parts(colors as *const gdk::RGBA, n_colors),

@@ -214,7 +214,7 @@ pub trait CellAreaImpl: CellAreaImplExt + ObjectImpl {
         &self,
         cell_area: &Self::Type,
         context: &P,
-        snapshot: &Snapshot,
+        snapshot: &impl IsA<Snapshot>,
         widget: &W,
         background_area: &gdk::Rectangle,
         cellarea: &gdk::Rectangle,
@@ -327,7 +327,7 @@ pub trait CellAreaImplExt: ObjectSubclass {
         &self,
         cell_area: &Self::Type,
         context: &P,
-        snapshot: &Snapshot,
+        snapshot: &impl IsA<Snapshot>,
         widget: &W,
         background_area: &gdk::Rectangle,
         cellarea: &gdk::Rectangle,
@@ -655,7 +655,7 @@ impl<T: CellAreaImpl> CellAreaImplExt for T {
         &self,
         cell_area: &Self::Type,
         context: &P,
-        snapshot: &Snapshot,
+        snapshot: &impl IsA<Snapshot>,
         widget: &W,
         background_area: &gdk::Rectangle,
         cellarea: &gdk::Rectangle,
@@ -670,7 +670,7 @@ impl<T: CellAreaImpl> CellAreaImplExt for T {
                     cell_area.unsafe_cast_ref::<CellArea>().to_glib_none().0,
                     context.as_ref().to_glib_none().0,
                     widget.as_ref().to_glib_none().0,
-                    snapshot.to_glib_none().0,
+                    snapshot.as_ref().to_glib_none().0,
                     background_area.to_glib_none().0,
                     cellarea.to_glib_none().0,
                     flags.into_glib(),
@@ -976,12 +976,11 @@ unsafe extern "C" fn cell_area_snapshot<T: CellAreaImpl>(
     let wrap: Borrowed<CellArea> = from_glib_borrow(ptr);
     let context: Borrowed<CellAreaContext> = from_glib_borrow(contextptr);
     let widget: Borrowed<Widget> = from_glib_borrow(wdgtptr);
-    let snapshot: Borrowed<Snapshot> = from_glib_borrow(snapshotptr);
 
     imp.snapshot(
         wrap.unsafe_cast_ref(),
         &*context,
-        &snapshot,
+        &*from_glib_borrow::<_, Snapshot>(snapshotptr),
         &*widget,
         &from_glib_borrow(bgptr),
         &from_glib_borrow(cellptr),

@@ -191,7 +191,7 @@ pub trait WidgetImpl: WidgetImplExt + ObjectImpl {
         self.parent_size_allocate(widget, width, height, baseline)
     }
 
-    fn snapshot(&self, widget: &Self::Type, snapshot: &Snapshot) {
+    fn snapshot(&self, widget: &Self::Type, snapshot: &impl IsA<Snapshot>) {
         self.parent_snapshot(widget, snapshot)
     }
 
@@ -247,7 +247,7 @@ pub trait WidgetImplExt: ObjectSubclass {
     fn parent_set_focus_child(&self, widget: &Self::Type, child: Option<&Widget>);
     fn parent_show(&self, widget: &Self::Type);
     fn parent_size_allocate(&self, widget: &Self::Type, width: i32, height: i32, baseline: i32);
-    fn parent_snapshot(&self, widget: &Self::Type, snapshot: &Snapshot);
+    fn parent_snapshot(&self, widget: &Self::Type, snapshot: &impl IsA<Snapshot>);
     fn parent_state_flags_changed(&self, widget: &Self::Type, state_flags: &StateFlags);
     fn parent_system_setting_changed(&self, widget: &Self::Type, settings: &SystemSetting);
     fn parent_unmap(&self, widget: &Self::Type);
@@ -515,14 +515,14 @@ impl<T: WidgetImpl> WidgetImplExt for T {
         }
     }
 
-    fn parent_snapshot(&self, widget: &Self::Type, snapshot: &Snapshot) {
+    fn parent_snapshot(&self, widget: &Self::Type, snapshot: &impl IsA<Snapshot>) {
         unsafe {
             let data = T::type_data();
             let parent_class = data.as_ref().parent_class() as *mut ffi::GtkWidgetClass;
             if let Some(f) = (*parent_class).snapshot {
                 f(
                     widget.unsafe_cast_ref::<Widget>().to_glib_none().0,
-                    snapshot.to_glib_none().0,
+                    snapshot.as_ref().to_glib_none().0,
                 )
             }
         }
@@ -869,9 +869,11 @@ unsafe extern "C" fn widget_snapshot<T: WidgetImpl>(
     let instance = &*(ptr as *mut T::Instance);
     let imp = instance.imp();
     let wrap: Borrowed<Widget> = from_glib_borrow(ptr);
-    let snapshot = from_glib_borrow(snapshot_ptr);
 
-    imp.snapshot(wrap.unsafe_cast_ref(), &snapshot)
+    imp.snapshot(
+        wrap.unsafe_cast_ref(),
+        &*from_glib_borrow::<_, Snapshot>(snapshot_ptr),
+    )
 }
 
 unsafe extern "C" fn widget_state_flags_changed<T: WidgetImpl>(

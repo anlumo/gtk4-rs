@@ -91,7 +91,7 @@ pub trait CellRendererImpl: CellRendererImplExt + ObjectImpl {
     fn snapshot<P: IsA<Widget>>(
         &self,
         renderer: &Self::Type,
-        snapshot: &Snapshot,
+        snapshot: &impl IsA<Snapshot>,
         widget: &P,
         background_area: &gdk::Rectangle,
         cell_area: &gdk::Rectangle,
@@ -175,7 +175,7 @@ pub trait CellRendererImplExt: ObjectSubclass {
     fn parent_snapshot<P: IsA<Widget>>(
         &self,
         renderer: &Self::Type,
-        snapshot: &Snapshot,
+        snapshot: &impl IsA<Snapshot>,
         widget: &P,
         background_area: &gdk::Rectangle,
         cell_area: &gdk::Rectangle,
@@ -320,7 +320,7 @@ impl<T: CellRendererImpl> CellRendererImplExt for T {
     fn parent_snapshot<P: IsA<Widget>>(
         &self,
         renderer: &Self::Type,
-        snapshot: &Snapshot,
+        snapshot: &impl IsA<Snapshot>,
         widget: &P,
         background_area: &gdk::Rectangle,
         cell_area: &gdk::Rectangle,
@@ -332,7 +332,7 @@ impl<T: CellRendererImpl> CellRendererImplExt for T {
             if let Some(f) = (*parent_class).snapshot {
                 f(
                     renderer.unsafe_cast_ref::<CellRenderer>().to_glib_none().0,
-                    snapshot.to_glib_none().0,
+                    snapshot.as_ref().to_glib_none().0,
                     widget.as_ref().to_glib_none().0,
                     background_area.to_glib_none().0,
                     cell_area.to_glib_none().0,
@@ -633,11 +633,10 @@ unsafe extern "C" fn cell_renderer_snapshot<T: CellRendererImpl>(
     let imp = instance.imp();
     let wrap: Borrowed<CellRenderer> = from_glib_borrow(ptr);
     let widget: Borrowed<Widget> = from_glib_borrow(wdgtptr);
-    let snapshot: Borrowed<Snapshot> = from_glib_borrow(snapshotptr);
 
     imp.snapshot(
         wrap.unsafe_cast_ref(),
-        &snapshot,
+        &*from_glib_borrow::<_, Snapshot>(snapshotptr),
         &*widget,
         &from_glib_borrow(bgptr),
         &from_glib_borrow(cellptr),

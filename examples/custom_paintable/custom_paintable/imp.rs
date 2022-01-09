@@ -28,9 +28,15 @@ impl PaintableImpl for CustomPaintable {
         200
     }
 
-    fn snapshot(&self, _paintable: &Self::Type, snapshot: &gdk::Snapshot, width: f64, height: f64) {
+    fn snapshot(
+        &self,
+        _paintable: &Self::Type,
+        snapshot: &impl IsA<gdk::Snapshot>,
+        width: f64,
+        height: f64,
+    ) {
         // Draw a linear gradient
-        snapshot.append_linear_gradient(
+        snapshot.as_ref().append_linear_gradient(
             &graphene::Rect::new(0_f32, 0_f32, width as f32, height as f32),
             &graphene::Point::new(0f32, 0f32),
             &graphene::Point::new(width as f32, height as f32),
