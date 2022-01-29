@@ -47,6 +47,7 @@ Also, the name of the chapter suggests that the phrase "Hello World!" will be in
 > Here, we have hidden that we brought `gtk::Button` into scope.
 
 There is now a button and if we click on it, its label becomes "Hello World!".
+
 <div style="text-align:center">
  <video autoplay muted loop>
   <source src="vid/hello_world_button.webm" type="video/webm">
